@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>Sci Reader｜科学で英語多読</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="top-row">
+      <button class="iconbtn" id="homeBtn" aria-label="ホーム">🏠</button>
+      <span id="progressLabel"><b>Sci Reader</b></span>
+      <button class="iconbtn" id="sitesBtn" aria-label="おすすめサイト">🔗</button>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+  </header>
+
+  <main id="home" class="home">
+    <h1>🔬 科学で英語多読</h1>
+    <p class="lead">2〜4文ずつサクッと読める。訳は見たいときだけ。</p>
+    <div id="articleList" class="home" style="padding:0"></div>
+    <section class="panel">
+      <h2>📋 自分のテキスト／URLで読む</h2>
+      <textarea id="customText" placeholder="英文、または英文が載っているページのURLを貼り付け…"></textarea>
+      <button class="primary" id="startCustom">貼り付けて読み始める</button>
+    </section>
+    <button class="ghost" id="sitesBtn2">🔗 おすすめサイト一覧を開く</button>
+  </main>
+
+  <main id="reader" class="reader hidden">
+    <article class="card">
+      <div class="hero" id="hero"></div>
+      <div class="en" id="en"></div>
+      <div class="ja hidden" id="ja"></div>
+    </article>
+  </main>
+
+  <main id="finish" class="finish hidden">
+    <div class="big">🎉</div>
+    <h2>Finished!</h2>
+    <p>お疲れ様でした。読了です！</p>
+    <button class="primary" id="againBtn">もう一度読む</button>
+    <button class="ghost" id="finishHome">ホームへ戻る</button>
+  </main>
+
+  <nav class="actions hidden" id="actions">
+    <div class="in">
+      <button id="prev"><span>◀</span>戻る</button>
+      <button id="speak"><span>🔊</span>読み上げ</button>
+      <button id="trans"><span>👁</span>訳を見る</button>
+      <button id="next"><span>▶</span>次へ</button>
+    </div>
+  </nav>
+</div>
+
+<div class="drawer hidden" id="drawer">
+  <div class="sheet">
+    <h2>🔗 おすすめサイト</h2>
+    <div id="siteList"></div>
+    <button class="ghost" id="closeDrawer" style="margin-top:12px">閉じる</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
