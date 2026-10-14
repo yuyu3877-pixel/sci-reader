@@ -6,6 +6,14 @@
   let shown = false;
   const jaCache = new Map();
 
+  // ---------- 保存（続きから読む） ----------
+  const KEY = "sciReader.v1";
+  let st = { last: null, progress: {}, custom: [] };
+  try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} };
+  const keyOf = a => a.id || a.key;
+  const allArticles = () => ARTICLES.concat(st.custom);
+
   // ---------- views ----------
   function view(name) {
     for (const v of ["home", "reader", "finish"]) $(v).classList.toggle("hidden", v !== name);
@@ -26,6 +34,16 @@
         <span><div class="t">${a.title}</div><div class="j">${a.titleJa}</div>
         <div class="m">${a.sections.length} sections ・ 約${Math.max(1, Math.round(words(a.sections) / WPM))}分</div></span>
       </button>`).join("");
+    const resume = allArticles().find(a => keyOf(a) === st.last);
+    const ri = resume ? (st.progress[st.last] || 0) : 0;
+    $("resume").classList.toggle("hidden", !resume || ri === 0);
+    if (resume && ri > 0) {
+      $("resume").innerHTML = `<b>▶ 続きから読む</b><br><small>${resume.title}（Section ${ri + 1} / ${resume.sections.length}）</small>`;
+    }
+    $("savedList").innerHTML = st.custom.map((a, i) => `
+      <div class="saved"><button data-c="${i}" class="open">📖 ${a.title}<small>Section ${(st.progress[a.key] || 0) + 1} / ${a.sections.length}</small></button>
+      <button data-d="${i}" class="del" aria-label="削除">🗑</button></div>`).join("");
+    $("savedPanel").classList.toggle("hidden", !st.custom.length);
     $("siteList").innerHTML = SITES.map(s => `
       <a class="link" href="${s.url}" target="_blank" rel="noopener noreferrer">
         ${s.emoji} <b>${s.name}</b><small>${s.desc}</small></a>`).join("");
@@ -34,12 +52,15 @@
 
   $("articleList").addEventListener("click", e => {
     const b = e.target.closest(".art");
-    if (b) start(ARTICLES[+b.dataset.i]);
+    if (!b) return;
+    const a = ARTICLES[+b.dataset.i];
+    start(a, st.progress[a.id] || 0);
   });
 
   // ---------- reader ----------
-  function start(a) {
-    article = a; idx = 0;
+  function start(a, from) {
+    article = a; idx = from || 0;
+    st.last = keyOf(a); save();
     view("reader");
     render();
   }
@@ -59,6 +80,7 @@
     $("prev").disabled = idx === 0;
     $("next").innerHTML = idx === article.sections.length - 1 ? "<span>🏁</span>読了" : "<span>▶</span>次へ";
     updateProgress();
+    st.progress[keyOf(article)] = idx; save();
     window.scrollTo(0, 0);
   }
 
@@ -76,6 +98,7 @@
     if (n < 0) return;
     if (n >= article.sections.length) {
       $("barFill").style.width = "100%";
+      st.progress[keyOf(article)] = 0; save();
       view("finish");
       return;
     }
@@ -224,7 +247,12 @@
     }
     const secs = makeSections(raw);
     if (!secs.length) { alert("英文またはURLを貼り付けてください。"); return; }
-    start({ title: "My Text", emoji: "📖", grad: ["#334155", "#6366f1"], sections: secs });
+    const title = secs[0].en.split(/\s+/).slice(0, 5).join(" ") + "…";
+    const a = { key: "c" + Date.now(), title, emoji: "📖", grad: ["#334155", "#6366f1"], sections: secs };
+    st.custom.unshift(a);
+    st.custom = st.custom.slice(0, 10);
+    save();
+    start(a);
   });
 
   // ---------- events ----------
@@ -232,9 +260,22 @@
   $("next").addEventListener("click", () => go(1));
   $("speak").addEventListener("click", speak);
   $("trans").addEventListener("click", toggleTranslation);
-  $("homeBtn").addEventListener("click", () => view("home"));
-  $("finishHome").addEventListener("click", () => view("home"));
-  $("againBtn").addEventListener("click", () => start(article));
+  $("homeBtn").addEventListener("click", () => { renderHome(); view("home"); });
+  $("resume").addEventListener("click", () => {
+    const a = allArticles().find(x => keyOf(x) === st.last);
+    if (a) start(a, st.progress[st.last] || 0);
+  });
+  $("savedList").addEventListener("click", e => {
+    const o = e.target.closest("[data-c]"), d = e.target.closest("[data-d]");
+    if (o) { const a = st.custom[+o.dataset.c]; start(a, st.progress[a.key] || 0); }
+    if (d) {
+      const a = st.custom[+d.dataset.d];
+      if (!confirm("この保存済みテキストを削除しますか？")) return;
+      st.custom.splice(+d.dataset.d, 1); delete st.progress[a.key]; save(); renderHome();
+    }
+  });
+  $("finishHome").addEventListener("click", () => { renderHome(); view("home"); });
+  $("againBtn").addEventListener("click", () => start(article, 0));
   const openSites = () => $("drawer").classList.remove("hidden");
   $("sitesBtn").addEventListener("click", openSites);
   $("sitesBtn2").addEventListener("click", openSites);

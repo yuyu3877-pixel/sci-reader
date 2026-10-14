@@ -21,12 +21,14 @@
   <main id="home" class="home">
     <h1>🔬 科学で英語多読</h1>
     <p class="lead">2〜4文ずつサクッと読める。訳は見たいときだけ。</p>
+    <button class="art resume hidden" id="resume" style="background:linear-gradient(135deg,#4f46e5,#06b6d4)"></button>
     <div id="articleList" class="home" style="padding:0"></div>
     <section class="panel">
       <h2>📋 自分のテキスト／URLで読む</h2>
       <textarea id="customText" placeholder="英文、または英文が載っているページのURLを貼り付け…"></textarea>
       <button class="primary" id="startCustom">貼り付けて読み始める</button>
     </section>
+    <section class="panel hidden" id="savedPanel"><h2>🗂 保存したテキスト</h2><div id="savedList"></div></section>
     <button class="ghost" id="sitesBtn2">🔗 おすすめサイト一覧を開く</button>
   </main>
 
