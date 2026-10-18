@@ -284,4 +284,7 @@
 
   renderHome();
   view("home");
+  // 前回の続きがあれば、そのまま開く
+  const last = allArticles().find(x => keyOf(x) === st.last);
+  if (last && (st.progress[st.last] || 0) > 0) start(last, st.progress[st.last]);
 })();
